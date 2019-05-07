@@ -31,7 +31,7 @@ export const KeyframeWrapper = observer(({ delay, index, duration, keyframes, Co
     <div
       onClick={select}
       style={{
-        animation: `${duration ? duration : 0.01}s calc(var(--offset) + ${delay}s ) paused both animation${index}`
+        animation: `${duration ? duration : 0.01}s calc(var(--offset) + ${delay}s ) paused linear both animation${index}`
       }}
     >
       <Component {...rest} />
