@@ -80,8 +80,8 @@ class FormBuilderStore {
     this.formTitle = '';
   };
   @action
-  public moveComponentInSurvey = (oldIndex: number, newIndex: number, x: number, y: number) => {
-    const component = this.form[oldIndex];
+  public moveComponentInSurvey = (componentIndex: number, newIndex: number, x: number, y: number) => {
+    const component = this.form[componentIndex];
     const { delay, keyframes } = component.properties;
     const startTime = delay;
     const currentTime = this.offsetSeconds;
@@ -105,7 +105,7 @@ class FormBuilderStore {
             rotate: '0deg'
           });
       console.log(fullTime - startTime);
-      this.sortKeyframes(existingIndex > -1 ? existingIndex : keyframes.length - 1);
+      this.sortKeyframes(componentIndex);
       component.properties.duration = fullTime - startTime;
     }
   };
