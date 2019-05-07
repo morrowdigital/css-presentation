@@ -7,8 +7,7 @@ import Remove from '@material-ui/icons/Remove';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
-import { toJS } from 'mobx';
-
+import { Keyframes } from './Keyframes';
 let fieldType: any = null;
 
 export const ParametersPanel = inject('formBuilderStore')(
@@ -28,7 +27,6 @@ export const ParametersPanel = inject('formBuilderStore')(
         depth = 1;
         fieldType = null;
       }
-      console.log(toJS(obj))
       if (!Number.isInteger(parseInt(propertyName, 0))) {
         fieldType = propertyName;
       }
@@ -88,6 +86,7 @@ export const ParametersPanel = inject('formBuilderStore')(
         </div>
       );
     };
+    const { keyframes, duration, delay, ...rest }: any = currentComponent.properties || {};
     return (
       <>
         <Typography variant="h4">Properties</Typography>
@@ -101,11 +100,31 @@ export const ParametersPanel = inject('formBuilderStore')(
           </IconButton>
         ) : null}
         {currentComponent ? (
-          Object.keys(currentComponent.properties).length > 0 ? (
-            mapProperties(currentComponent.properties, null, 0)
-          ) : (
-            <Typography>This component has no properties</Typography>
-          )
+          <>
+            {rest && mapProperties(rest, null, 0)}
+
+            <div style={{ padding: '0.5rem' }}>
+              <TextField
+                label={'Duration'}
+                value={duration}
+                fullWidth
+                onChange={e => {
+                  editComponentProperty(selectedIndex, 'duration', e.target.value);
+                }}
+              />
+            </div>
+            <div style={{ padding: '0.5rem' }}>
+              <TextField
+                label={'Delay'}
+                value={delay}
+                fullWidth
+                onChange={e => {
+                  editComponentProperty(selectedIndex, 'delay', e.target.value);
+                }}
+              />
+            </div>
+            <Keyframes />
+          </>
         ) : (
           <Typography>Select a component in the preview pane to edit it's properties </Typography>
         )}

@@ -1,0 +1,67 @@
+import React, { useState } from 'react';
+import { inject } from 'mobx-react';
+import makeStyles from '@material-ui/styles/makeStyles';
+import { IKeyframe } from '../../mobx/formBuilderStore';
+import TextField from '@material-ui/core/TextField';
+import { observer } from 'mobx-react-lite';
+
+const useStyles = makeStyles({
+  list: {
+    width: '100%',
+    overflow: 'auto',
+    maxHeight: 300
+  }
+});
+
+export const EditKeyframe = inject('formBuilderStore')(
+  observer(({ index, formBuilderStore }: any) => {
+    const classes = useStyles();
+    const { selectedIndex, editComponentProperty, currentComponent } = formBuilderStore;
+    const keyframe = currentComponent.properties.keyframes[index];
+    const { time, translate, rotate, scale } = keyframe;
+    return (
+      <>
+        <div style={{ padding: '0.5rem' }}>
+          <TextField
+            label={'Time'}
+            value={time}
+            fullWidth
+            onChange={e => {
+              editComponentProperty(selectedIndex, 'time', e.target.value, 'keyframes', index);
+            }}
+          />
+        </div>
+        <div style={{ padding: '0.5rem' }}>
+          <TextField
+            label={'Translate'}
+            value={translate}
+            fullWidth
+            onChange={e => {
+              editComponentProperty(selectedIndex, 'translate', e.target.value, 'keyframes', index);
+            }}
+          />
+        </div>
+        <div style={{ padding: '0.5rem' }}>
+          <TextField
+            label={'Rotate'}
+            value={rotate}
+            fullWidth
+            onChange={e => {
+              editComponentProperty(selectedIndex, 'rotate', e.target.value, 'keyframes', index);
+            }}
+          />
+        </div>
+        <div style={{ padding: '0.5rem' }}>
+          <TextField
+            label={'Scale'}
+            value={scale}
+            fullWidth
+            onChange={e => {
+              editComponentProperty(selectedIndex, 'scale', e.target.value, 'keyframes', index);
+            }}
+          />
+        </div>
+      </>
+    );
+  })
+);

@@ -12,6 +12,13 @@ const root = document.documentElement;
 // add repeat option
 // add animation mode (ease, etc) 
 
+export interface IKeyframe  {
+  time: number;
+  translate: string;
+  rotate: string;
+  scale: number;
+}
+
 class FormBuilderStore {
   constructor() {
     root.style.setProperty('--offset', '0s');
