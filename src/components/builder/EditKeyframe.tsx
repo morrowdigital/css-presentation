@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { inject } from 'mobx-react';
 import makeStyles from '@material-ui/styles/makeStyles';
-import { IKeyframe } from '../../mobx/formBuilderStore';
 import TextField from '@material-ui/core/TextField';
 import { observer } from 'mobx-react-lite';
 
@@ -18,6 +17,7 @@ export const EditKeyframe = inject('formBuilderStore')(
     const classes = useStyles();
     const { selectedIndex, editComponentProperty, currentComponent } = formBuilderStore;
     const keyframe = currentComponent.properties.keyframes[index];
+    if (!keyframe) return null;
     const { time, translate, rotate, scale } = keyframe;
     return (
       <>
@@ -25,9 +25,10 @@ export const EditKeyframe = inject('formBuilderStore')(
           <TextField
             label={'Time'}
             value={time}
+            disabled={index === 0}
             fullWidth
             onChange={e => {
-              editComponentProperty(selectedIndex, 'time', e.target.value, 'keyframes', index);
+              editComponentProperty(selectedIndex, 'time', Number(e.target.value), 'keyframes', index);
             }}
           />
         </div>

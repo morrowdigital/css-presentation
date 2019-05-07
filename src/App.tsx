@@ -19,22 +19,19 @@ const extra = {
 const minimal: Theme = createMuiTheme({
   ...extra,
   typography: {
-    useNextVariants: true
-    // fontFamily: 'Quicksand',
-    // fontSize: 16
+    useNextVariants: true,
+    fontFamily: 'Quicksand',
+    fontSize: 16
   },
   palette: {
-    primary: {
-      main: '#000a3a'
-    },
-    secondary: {
-      main: '#1eace1'
-    },
+    // type: 'dark',
+    // background: { default: '#424242' }
     background: { default: '#fff' }
   },
   overrides: {
     MuiAppBar: {
       colorDefault: {
+        // backgroundColor: '#424242'
         backgroundColor: 'white'
       },
       root: {

@@ -4,15 +4,15 @@ import { components } from '../components/builder/elements';
 
 const root = document.documentElement;
 
-// todo - 
+// todo -
 // interpolate value for in between begin/end + before beginning
 // show all keyframes as ticks on slider
 // make types better
 // add opacity
 // add repeat option
-// add animation mode (ease, etc) 
+// add animation mode (ease, etc)
 
-export interface IKeyframe  {
+export interface IKeyframe {
   time: number;
   translate: string;
   rotate: string;
@@ -33,7 +33,7 @@ class FormBuilderStore {
   public selectedIndex: number | null = null;
 
   @observable
-  public offsetSeconds: number = -0.1;
+  public offsetSeconds: number = 0;
 
   @computed
   public get currentComponent() {
@@ -63,10 +63,11 @@ class FormBuilderStore {
         ...newComponent,
         properties: {
           ...newComponent.properties,
-          delay: this.offsetSeconds -0.1,
+          delay: this.offsetSeconds,
           keyframes: [{ time: 0, translate: `${x}px,${y}px`, scale: 1, rotate: '0deg' }]
         }
       });
+      root.style.setProperty('--offset', -1 * this.offsetSeconds - 0.1 + 's');
     }
   };
   @action
@@ -104,6 +105,7 @@ class FormBuilderStore {
             rotate: '0deg'
           });
       console.log(fullTime - startTime);
+      this.sortKeyframes(existingIndex > -1 ? existingIndex : keyframes.length - 1);
       component.properties.duration = fullTime - startTime;
     }
   };
@@ -111,16 +113,48 @@ class FormBuilderStore {
   public editComponentProperty = (
     componentIndex: number,
     id: string,
-    value: string,
+    value: string | number,
     fieldType: string,
     propertyIndex: number
   ) => {
     if (fieldType) {
       this.form[componentIndex].properties[fieldType][propertyIndex][id] = value;
+      console.log(id);
+      if (id === 'time') {
+        this.sortKeyframes(componentIndex);
+        this.setDuration(componentIndex);
+      }
     } else {
       this.form[componentIndex].properties[id] = value;
     }
   };
+
+  @action
+  public sortKeyframes = (index: number) => {
+    const sorted = this.form[index].properties.keyframes
+      .slice()
+      .sort((a: IKeyframe, b: IKeyframe) => Number(a.time) - Number(b.time));
+    this.form[index].properties.keyframes.replace(sorted);
+    this.form[index].properties.delay = sorted[0].time;
+  };
+
+  @action
+  public setDuration = (index: number) => {
+    const { keyframes } = this.form[index].properties;
+    this.form[index].properties.duration = keyframes[keyframes.length - 1].time - keyframes[0].time;
+  };
+
+  @action
+  public addKeyframe = (componentIndex: number) => {
+    this.form[componentIndex].properties.keyframes.push({
+      time: this.offsetSeconds,
+      translate: '',
+      scale: 1,
+      rotate: '0deg'
+    });
+    this.setDuration(componentIndex);
+  };
+
   @action
   public duplicateField = (componentIndex: number, fieldType: string, propertyIndex: number) => {
     const newField = this.form[componentIndex].properties[fieldType][propertyIndex];
