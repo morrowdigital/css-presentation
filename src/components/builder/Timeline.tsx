@@ -7,12 +7,11 @@ import makeStyles from '@material-ui/styles/makeStyles';
 
 const useStyles = makeStyles({
   timeline: {
-    position: 'absolute',
     bottom: 20,
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-    width: '98%',
+    flex: 1,
     padding: 10
   }
 });
@@ -25,7 +24,7 @@ export const Timeline = inject('formBuilderStore')(
     return (
       <div className={classes.timeline}>
         <Typography variant="body1">Timeline - {offsetSeconds}s</Typography>
-        <Slider value={offsetSeconds} onChange={setOffset} step={0.1} min={0.1}/>
+        <Slider value={offsetSeconds} onChange={setOffset} step={0.1} min={0} />
       </div>
     );
   })

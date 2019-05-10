@@ -8,9 +8,10 @@ const root = document.documentElement;
 // interpolate value for in between begin/end + before beginning
 // show all keyframes as ticks on slider
 // make types better
-// add opacity
 // add repeat option
 // add animation mode (ease, etc)
+// make add keyframe relative to selected keyframe
+// persistence / export import
 
 export interface IKeyframe {
   time: number;
@@ -22,18 +23,34 @@ export interface IKeyframe {
 class FormBuilderStore {
   constructor() {
     root.style.setProperty('--offset', '0s');
+    const form = localStorage.getItem('form');
+    console.log(form)
+    if(form) this.setForm(form);
+    window.onbeforeunload = () => {
+      localStorage.setItem('form', JSON.stringify(this.form));
+    }
   }
 
   @observable
   public form: IObservableArray<any> = observable.array([]);
   @observable
   public formTitle: string = '';
-
+  @observable
+  public animationState: string = 'paused';
   @observable
   public selectedIndex: number | null = null;
-
   @observable
   public offsetSeconds: number = 0;
+  @observable
+  public resetting = false;
+
+  private defaultKeyframe = () => ({
+    time: this.offsetSeconds,
+    translate: '',
+    scale: 1,
+    rotate: '0deg',
+    opacity: 1
+  });
 
   @computed
   public get currentComponent() {
@@ -52,7 +69,23 @@ class FormBuilderStore {
   };
 
   @action
+  public play = () => {
+    // this.setOffset(null, 0);
+    this.animationState = 'running';
+  };
+
+  @action
+  public pause = () => {
+    this.resetting = true;
+    setTimeout(() => (this.resetting = false), 0);
+    this.animationState = 'paused';
+  };
+
+  @action
   public setFormTitle = (event: ChangeEvent<HTMLInputElement>) => (this.formTitle = event.target.value);
+  @action
+  public setForm = (form: string) => (this.form = observable.array(JSON.parse(form)));
+
   @action
   public addComponentToSurvey = (componentType: string, index: number, x: number, y: number) => {
     const newComponent = components[componentType];
@@ -64,49 +97,55 @@ class FormBuilderStore {
         properties: {
           ...newComponent.properties,
           delay: this.offsetSeconds,
-          keyframes: [{ time: 0, translate: `${x}px,${y}px`, scale: 1, rotate: '0deg' }]
+          keyframes: [{ ...this.defaultKeyframe(), time: 0, translate: `${x}px,${y}px` }]
         }
       });
       root.style.setProperty('--offset', -1 * this.offsetSeconds - 0.1 + 's');
     }
   };
+
   @action
   public selectCurrentComponent = (index: number) => {
     this.selectedIndex = index;
   };
+
   @action
   public clearAll = (index: number) => {
     this.form = observable.array([]);
     this.formTitle = '';
   };
+
   @action
   public moveComponentInSurvey = (componentIndex: number, newIndex: number, x: number, y: number) => {
     const component = this.form[componentIndex];
     const { delay, keyframes } = component.properties;
     const startTime = delay;
     const currentTime = this.offsetSeconds;
-    const times: number[] = keyframes.map(({ time }: { time: number }) => time);
-    const fullTime = Math.max(times.sort((a, b) => Number(b) - Number(a))[0], currentTime);
+
     if (currentTime < startTime) {
       const diff = startTime - currentTime;
-      // increase each object key by diff
-      // set 0 to be new position
-      component.properties.duration = fullTime - currentTime;
-      component.delay = currentTime;
+      component.properties.keyframes = keyframes.map((keyframe: IKeyframe) => ({
+        ...keyframe,
+        time: keyframe.time + diff
+      }));
+      component.properties.keyframes.unshift({
+        ...this.defaultKeyframe(),
+        time: 0,
+        translate: `${x}px,${y}px`
+      });
+      component.properties.delay = currentTime;
+      this.sortKeyframes(componentIndex);
     } else {
       const newTime = currentTime - startTime;
       const existingIndex = keyframes.findIndex(({ time }: { time: number }) => time === newTime);
       existingIndex > -1
         ? (keyframes[existingIndex].translate = `${x}px,${y}px`)
         : keyframes.push({
+            ...this.defaultKeyframe(),
             time: newTime,
-            translate: `${x}px,${y}px`,
-            scale: 1,
-            rotate: '0deg'
+            translate: `${x}px,${y}px`
           });
-      console.log(fullTime - startTime);
       this.sortKeyframes(componentIndex);
-      component.properties.duration = fullTime - startTime;
     }
   };
   @action
@@ -119,10 +158,8 @@ class FormBuilderStore {
   ) => {
     if (fieldType) {
       this.form[componentIndex].properties[fieldType][propertyIndex][id] = value;
-      console.log(id);
       if (id === 'time') {
         this.sortKeyframes(componentIndex);
-        this.setDuration(componentIndex);
       }
     } else {
       this.form[componentIndex].properties[id] = value;
@@ -135,24 +172,25 @@ class FormBuilderStore {
       .slice()
       .sort((a: IKeyframe, b: IKeyframe) => Number(a.time) - Number(b.time));
     this.form[index].properties.keyframes.replace(sorted);
-    this.form[index].properties.delay = sorted[0].time;
+    this.setDuration(index);
   };
 
   @action
   public setDuration = (index: number) => {
     const { keyframes } = this.form[index].properties;
+    console.log(keyframes);
     this.form[index].properties.duration = keyframes[keyframes.length - 1].time - keyframes[0].time;
   };
 
   @action
   public addKeyframe = (componentIndex: number) => {
-    this.form[componentIndex].properties.keyframes.push({
-      time: this.offsetSeconds,
-      translate: '',
-      scale: 1,
-      rotate: '0deg'
+    const { keyframes } = this.form[componentIndex].properties;
+    const { translate } = keyframes[keyframes.length - 1];
+    keyframes.push({
+      ...this.defaultKeyframe(),
+      translate
     });
-    this.setDuration(componentIndex);
+    this.sortKeyframes(componentIndex);
   };
 
   @action

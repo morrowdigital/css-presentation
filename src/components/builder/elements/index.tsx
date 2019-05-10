@@ -22,7 +22,7 @@ export const componentLookup = {
   RegularIcon
 };
 
-const commonProps = { delay: 0, duration: 0, keyframes: {} };
+const commonProps = { delay: 0, duration: 0, keyframes: {}, zIndex: 1 };
 
 export const components: IFormComponents = {
   Text: { code: 'Text', properties: { text: 'Some Text', ...commonProps } },

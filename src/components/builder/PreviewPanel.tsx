@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DropTarget, DragSource } from 'react-dnd';
 import { inject, observer } from 'mobx-react';
 import Typography from '@material-ui/core/Typography';
@@ -37,32 +37,66 @@ const componentSource = {
 class ComponentWrapper extends React.Component<any> {
   public ref: HTMLDivElement | null = null;
   render() {
-    const { isDragging, connectDragSource, children } = this.props;
+    const { isDragging, connectDragSource, children, zIndex } = this.props;
     const opacity = isDragging ? 0.5 : 1;
     // const border = isDragging ? '1px black dotted' : undefined;
     return connectDragSource(
-      <div ref={ref => (this.ref = ref)} style={{ opacity, display: 'inline-block', position: 'absolute', transform: 'translate3d(0, 0, 0)' }}>
+      <div
+        ref={ref => (this.ref = ref)}
+        style={{ opacity, display: 'inline-block', position: 'absolute', transform: 'translate3d(0, 0, 0)', zIndex }}
+      >
         {children}
       </div>
     );
   }
 }
 
+const exportJson = (form: any[]) => {
+  var dataUri = 'data:application/text;charset=utf-8,' + encodeURIComponent(JSON.stringify(form));
+  var link = document.createElement('a');
+  link.download = 'FormBuilderExport.txt';
+  link.href = dataUri;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+const importJson = (target: EventTarget & HTMLInputElement, setForm: (form: string) => void) => {
+  const fileReader = new FileReader();
+  if (!target.files) return;
+  fileReader.readAsText(target.files[0]);
+  fileReader.onload = (e: any) => {
+    setForm(e.target.result);
+  };
+};
+
 const DropContainer = DragSource('component', componentSource, (connect, monitor) => ({
   connectDragSource: connect.dragSource(),
   isDragging: monitor.isDragging()
 }))(ComponentWrapper);
 
-export const PreviewPanel = observer(({ connectDropTarget, formBuilderStore, SaveButton }) => {
-  const { clearAll, form, moveComponentInSurvey, addComponentToSurvey, selectCurrentComponent } = formBuilderStore;
+export const PreviewPanel = observer(({ connectDropTarget, formBuilderStore }) => {
+  const {
+    clearAll,
+    form,
+    setForm,
+    moveComponentInSurvey,
+    addComponentToSurvey,
+    selectCurrentComponent
+  } = formBuilderStore;
 
   return connectDropTarget(
     <div style={{ height: '100%' }}>
       <Typography variant="h4">Preview</Typography>
       <Divider style={{ marginBottom: '0.5em' }} />
-      <Button style={{ position: 'absolute', right: '1em', top: '0.5rem' }} onClick={clearAll}>
-        Clear all
-      </Button>
+      <div style={{ position: 'absolute', right: '1em', top: '0.5rem' }}>
+        <Button onClick={() => exportJson(form)}>Export</Button>
+        <Button component="label">
+          Import{' '}
+          <input type="file" onChange={({ target }) => importJson(target, setForm)} style={{ display: 'none' }} />
+        </Button>
+        <Button onClick={clearAll}>Clear all</Button>
+      </div>
       <Divider style={{ marginBottom: '0.5em', marginTop: '0.5em' }} />
       {form.length > 0 ? (
         form.map((component: any, index: any) => {
@@ -73,6 +107,7 @@ export const PreviewPanel = observer(({ connectDropTarget, formBuilderStore, Sav
               addComponentToSurvey={addComponentToSurvey}
               index={index}
               key={index}
+              zIndex={component.properties.zIndex}
             >
               <KeyframeWrapper
                 {...component.properties}

@@ -18,13 +18,15 @@ export const EditKeyframe = inject('formBuilderStore')(
     const { selectedIndex, editComponentProperty, currentComponent } = formBuilderStore;
     const keyframe = currentComponent.properties.keyframes[index];
     if (!keyframe) return null;
-    const { time, translate, rotate, scale } = keyframe;
+    const { time, translate, rotate, scale, opacity } = keyframe;
     return (
       <>
         <div style={{ padding: '0.5rem' }}>
           <TextField
             label={'Time'}
             value={time}
+            type="number"
+            inputProps={{ step: "0.1" }}
             disabled={index === 0}
             fullWidth
             onChange={e => {
@@ -56,9 +58,23 @@ export const EditKeyframe = inject('formBuilderStore')(
           <TextField
             label={'Scale'}
             value={scale}
+            inputProps={{ min: "0", step: "0.1" }}
+            type="number"
             fullWidth
             onChange={e => {
               editComponentProperty(selectedIndex, 'scale', e.target.value, 'keyframes', index);
+            }}
+          />
+        </div>
+        <div style={{ padding: '0.5rem' }}>
+          <TextField
+            label={'Opacity'}
+            value={opacity}
+            inputProps={{ min: "0", max: "1", step: "0.1" }}
+            type="number"
+            fullWidth
+            onChange={e => {
+              editComponentProperty(selectedIndex, 'opacity', e.target.value, 'keyframes', index);
             }}
           />
         </div>
