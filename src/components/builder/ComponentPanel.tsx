@@ -24,7 +24,7 @@ class ComponentWrapper extends React.Component<any> {
       <div
         ref={ref => (this.ref = ref)}
         className="py-1"
-        style={{ border: 'grey dashed 1px', marginBottom: '10px', display: 'inline-block' }}
+        style={{ border: 'grey dashed 1px', marginBottom: '10px', display: 'flex' }}
       >
         {children}
       </div>

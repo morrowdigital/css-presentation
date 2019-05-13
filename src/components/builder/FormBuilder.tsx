@@ -44,11 +44,11 @@ export const FormBuilder = () => {
 
   return (
     <DragDropContextProvider backend={HTML5Backend}>
-      <Grid container>
-        <Grid className={classes.containerStyle} container direction="column" alignItems="baseline" item xs={3}>
+      <Grid container style={{maxWidth: '100vw'}}>
+        <Grid className={classes.containerStyle} container direction="column" alignItems="baseline" item xs={2}>
           <ComponentPanel />
         </Grid>
-        <Grid className={classes.middleContainerStyle} item xs={6}>
+        <Grid className={classes.middleContainerStyle} item xs={7}>
           <PreviewPanel/>
           <Grid container direction="row" style={{ position: 'absolute', bottom: 0, left: 0 }}>
             <PlayButton />

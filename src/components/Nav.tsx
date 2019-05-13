@@ -4,18 +4,12 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
-import Drawer from '@material-ui/core/Drawer';
-import List from '@material-ui/core/List';
 import Routes from './../mobx/routes';
 import { useState } from 'react';
 import { makeStyles, useTheme } from '@material-ui/styles';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import MenuIcon from '@material-ui/icons/Menu';
 import classnames from 'classnames';
 import Typography from '@material-ui/core/Typography';
-import { NavigationItems } from './NavigationItems';
 
 interface INavBarProps {
   routeTitle: string;
@@ -83,7 +77,7 @@ const NavBar = ({ routeTitle, children, routesStore }: INavBarProps) => {
           </Menu>
         </Toolbar>
       </AppBar>
-      <Drawer
+      {/* <Drawer
         variant="permanent"
         onClose={() => (drawerOpen ? setDrawerOpen(false) : setDrawerOpen(true))}
         classes={{
@@ -103,7 +97,7 @@ const NavBar = ({ routeTitle, children, routesStore }: INavBarProps) => {
             onClick={navigateTo}
           />
         </List>
-      </Drawer>
+      </Drawer> */}
       <main className={classes.content} onScroll={theme.custom && theme.custom.minimal && handleScroll}>
         <div className={classes.toolbar} />
         <div className={classes.visibleSpace}>{children}</div>
@@ -176,8 +170,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     width: '100%',
     justifyContent: 'space-around',
-    flexDirection: 'row-reverse' as 'row-reverse',
-    paddingLeft: theme.spacing.unit * 7
+    flexDirection: 'row-reverse' as 'row-reverse'
   },
   toolbar: theme.mixins.toolbar
 }));

@@ -12,5 +12,5 @@ const useStyles = makeStyles({
 
 export const RegularIcon = observer(({ icon, color, size }: any) => {
   const classes = useStyles();
-  return <FontAwesomeIcon icon={['far', icon]} color={color} size={size} />;
+  return <FontAwesomeIcon icon={['far', icon]} style={{height: '1em'}} color={color} size={size} />;
 });

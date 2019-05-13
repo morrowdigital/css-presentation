@@ -8,8 +8,9 @@ const makeTransformCss = (transform: object) =>
     .map(key => `${key}(${transform[key]})`)
     .join(' ')} translateZ(0);`;
 
+// this should prob just get all the info from form builder store (except index)
 export const KeyframeWrapper = inject('formBuilderStore')(
-  observer(({ delay, index, duration, keyframes, Component, select, formBuilderStore, ...rest }: any) => {
+  observer(({ delay, index, duration, keyframes, Component, formBuilderStore, ...rest }: any) => {
     if (keyframes && index > -1) {
       let keyfCSS = `@keyframes animation${index} { `;
       const times: number[] = keyframes.map(({ time }: { time: number }) => time);
@@ -29,14 +30,20 @@ export const KeyframeWrapper = inject('formBuilderStore')(
       (document.styleSheets[0] as any).deleteRule(index);
       (document.styleSheets[0] as any).insertRule(keyfCSS, index);
     }
-    const { animationState, resetting } = formBuilderStore as FormBuilderStore;
+    const { animationState, resetting, selectCurrentComponent } = formBuilderStore as FormBuilderStore;
     return (
       <div
-        onClick={select}
+        onClick={e => {
+          selectCurrentComponent(index);
+          e.stopPropagation();
+        }}
         style={{
-          animation: resetting ? 'none' :  `${
-            duration ? duration : 0.01
-          }s calc(var(--offset) + ${delay}s ) ${animationState} 1 linear both animation${index}`
+          animation: resetting
+            ? 'none'
+            : `${
+                duration ? duration : 0.01
+              }s calc(var(--offset) + ${delay}s ) ${animationState} 1 linear both animation${index}`,
+          pointerEvents: 'auto'
         }}
       >
         <Component {...rest} />

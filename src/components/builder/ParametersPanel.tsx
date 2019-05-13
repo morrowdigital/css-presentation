@@ -18,7 +18,9 @@ export const ParametersPanel = inject('formBuilderStore')(
       removeField,
       selectedIndex,
       editComponentProperty,
-      removeComponent
+      removeComponent,
+      containerProperties,
+      editContainerProperty
     } = formBuilderStore;
     const mapProperties = (obj: any, propertyName: any, depth?: number) => {
       if (typeof depth === 'number') {
@@ -89,16 +91,16 @@ export const ParametersPanel = inject('formBuilderStore')(
     const { keyframes, duration, delay, ...rest }: any = currentComponent.properties || {};
     return (
       <>
-        <Typography variant="h4">Properties</Typography>
+        <Typography variant="h4">
+          Properties
+          {selectedIndex ? (
+            <IconButton onClick={() => removeComponent(selectedIndex)}>
+              <Delete />
+            </IconButton>
+          ) : null}
+        </Typography>
         <Divider style={{ marginBottom: '0.5em' }} />
-        {currentComponent ? (
-          <IconButton
-            style={{ position: 'absolute', right: '1em', top: '0.1em' }}
-            onClick={() => removeComponent(selectedIndex)}
-          >
-            <Delete />
-          </IconButton>
-        ) : null}
+
         {currentComponent ? (
           <>
             {rest && mapProperties(rest, null, 0)}
@@ -107,6 +109,7 @@ export const ParametersPanel = inject('formBuilderStore')(
               <TextField
                 label={'Duration'}
                 value={duration}
+                disabled
                 fullWidth
                 onChange={e => {
                   editComponentProperty(selectedIndex, 'duration', e.target.value);
@@ -126,7 +129,39 @@ export const ParametersPanel = inject('formBuilderStore')(
             <Keyframes />
           </>
         ) : (
-          <Typography>Select a component in the preview pane to edit it's properties </Typography>
+          <>
+            <div style={{ padding: '0.5rem' }}>
+              <TextField
+                label={'Container width'}
+                value={containerProperties.width}
+                fullWidth
+                onChange={e => {
+                  editContainerProperty('width', e.target.value);
+                }}
+              />
+            </div>
+            <div style={{ padding: '0.5rem' }}>
+              <TextField
+                label={'Container height'}
+                value={containerProperties.height}
+                fullWidth
+                onChange={e => {
+                  editContainerProperty('height', e.target.value);
+                }}
+              />
+            </div>
+            <div style={{ padding: '0.5rem' }}>
+              <TextField
+                label={'Container Scale'}
+                value={containerProperties.containerScale}
+                fullWidth
+                onChange={e => {
+                  editContainerProperty('containerScale', e.target.value);
+                }}
+              />
+            </div>
+            <Typography>Select a component in the preview pane to edit it's properties </Typography>
+          </>
         )}
       </>
     );

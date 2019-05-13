@@ -5,13 +5,14 @@ import { components } from '../components/builder/elements';
 const root = document.documentElement;
 
 // todo -
-// interpolate value for in between begin/end + before beginning
 // show all keyframes as ticks on slider
 // make types better
 // add repeat option
 // add animation mode (ease, etc)
 // make add keyframe relative to selected keyframe
-// persistence / export import
+// separate out x and y from translate\
+// add icons for expo presentation
+// fix full screen size to be 100%
 
 export interface IKeyframe {
   time: number;
@@ -23,12 +24,16 @@ export interface IKeyframe {
 class FormBuilderStore {
   constructor() {
     root.style.setProperty('--offset', '0s');
-    const form = localStorage.getItem('form');
-    console.log(form)
-    if(form) this.setForm(form);
-    window.onbeforeunload = () => {
-      localStorage.setItem('form', JSON.stringify(this.form));
+    const project = localStorage.getItem('project');
+    if (project) {
+      this.setProject(project);
     }
+    window.onbeforeunload = () => {
+      localStorage.setItem(
+        'project',
+        JSON.stringify({ form: this.form, containerProperties: this.containerProperties })
+      );
+    };
   }
 
   @observable
@@ -43,6 +48,8 @@ class FormBuilderStore {
   public offsetSeconds: number = 0;
   @observable
   public resetting = false;
+  @observable
+  public containerProperties = { containerScale: 0.6, height: '720px', width: '1280px' };
 
   private defaultKeyframe = () => ({
     time: this.offsetSeconds,
@@ -84,11 +91,18 @@ class FormBuilderStore {
   @action
   public setFormTitle = (event: ChangeEvent<HTMLInputElement>) => (this.formTitle = event.target.value);
   @action
-  public setForm = (form: string) => (this.form = observable.array(JSON.parse(form)));
+  public setProject = (project: string) => {
+    const parsed = JSON.parse(project);
+    this.form = parsed.form;
+    this.containerProperties = parsed.containerProperties;
+  };
 
   @action
   public addComponentToSurvey = (componentType: string, index: number, x: number, y: number) => {
     const newComponent = components[componentType];
+    const getX = x / this.containerProperties.containerScale;
+    const getY = y / this.containerProperties.containerScale;
+
     if (index) {
       this.form.splice(index, 0, newComponent);
     } else {
@@ -97,7 +111,7 @@ class FormBuilderStore {
         properties: {
           ...newComponent.properties,
           delay: this.offsetSeconds,
-          keyframes: [{ ...this.defaultKeyframe(), time: 0, translate: `${x}px,${y}px` }]
+          keyframes: [{ ...this.defaultKeyframe(), time: 0, translate: `${getX}px,${getY}px` }]
         }
       });
       root.style.setProperty('--offset', -1 * this.offsetSeconds - 0.1 + 's');
@@ -105,12 +119,12 @@ class FormBuilderStore {
   };
 
   @action
-  public selectCurrentComponent = (index: number) => {
-    this.selectedIndex = index;
+  public selectCurrentComponent = (index: number | null) => {
+    this.selectedIndex = index; 
   };
 
   @action
-  public clearAll = (index: number) => {
+  public clearAll = () => {
     this.form = observable.array([]);
     this.formTitle = '';
   };
@@ -121,6 +135,8 @@ class FormBuilderStore {
     const { delay, keyframes } = component.properties;
     const startTime = delay;
     const currentTime = this.offsetSeconds;
+    const getX = x / this.containerProperties.containerScale;
+    const getY = y / this.containerProperties.containerScale;
 
     if (currentTime < startTime) {
       const diff = startTime - currentTime;
@@ -131,7 +147,7 @@ class FormBuilderStore {
       component.properties.keyframes.unshift({
         ...this.defaultKeyframe(),
         time: 0,
-        translate: `${x}px,${y}px`
+        translate: `${getX}px,${getY}px`
       });
       component.properties.delay = currentTime;
       this.sortKeyframes(componentIndex);
@@ -139,11 +155,11 @@ class FormBuilderStore {
       const newTime = currentTime - startTime;
       const existingIndex = keyframes.findIndex(({ time }: { time: number }) => time === newTime);
       existingIndex > -1
-        ? (keyframes[existingIndex].translate = `${x}px,${y}px`)
+        ? (keyframes[existingIndex].translate = `${getX}px,${getY}px`)
         : keyframes.push({
             ...this.defaultKeyframe(),
             time: newTime,
-            translate: `${x}px,${y}px`
+            translate: `${getX}px,${getY}px`
           });
       this.sortKeyframes(componentIndex);
     }
@@ -167,6 +183,11 @@ class FormBuilderStore {
   };
 
   @action
+  public editContainerProperty = (property: string, value: string | number) => {
+    this.containerProperties[property] = value;
+  };
+
+  @action
   public sortKeyframes = (index: number) => {
     const sorted = this.form[index].properties.keyframes
       .slice()
@@ -178,7 +199,6 @@ class FormBuilderStore {
   @action
   public setDuration = (index: number) => {
     const { keyframes } = this.form[index].properties;
-    console.log(keyframes);
     this.form[index].properties.duration = keyframes[keyframes.length - 1].time - keyframes[0].time;
   };
 
