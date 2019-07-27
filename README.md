@@ -4,6 +4,10 @@
   <img src="src/assets/css-presentation.png" width="350" title="CSS Presentation">
 </p>
 
+
+### Quick Start
+`yarn && yarn start`
+
 ### Who?
 
 CSS Presentation is an open source project created by
