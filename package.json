@@ -25,7 +25,7 @@
     "react-dnd-html5-backend": "^7.4.4",
     "react-dom": "^16.8.6",
     "react-router5": "^7.1.0",
-    "react-scripts": "2.1.8",
+    "react-scripts": "5.0.1",
     "typescript": "3.3.4000"
   },
   "scripts": {
